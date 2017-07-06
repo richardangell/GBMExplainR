@@ -9,7 +9,17 @@
 #' @export
 get_decision_path <- function(pretty_tree, model, pred_row) {
   
-  # call traverse_tree_r to recursively traverse through the tree
+  #-----------------------------------------------------------------------------#
+  # Function | get_decision_path
+  #-----------------------------------------------------------------------------#
+  # Layout   | Section 1. Get prediction route through tree
+  #          | Section 2. Calculate feature contributions
+  #-----------------------------------------------------------------------------#
+  
+  #-----------------------------------------------------------------------------#
+  # Section 1. Get prediction route through tree ----
+  #-----------------------------------------------------------------------------#
+
   pred_route <- choose_split_r(row = 1,
                                pretty_tree = pretty_tree, 
                                model = model, 
@@ -17,6 +27,10 @@ get_decision_path <- function(pretty_tree, model, pred_row) {
   
   # change structure from list into data.frame
   pred_route_df <- do.call(rbind, pred_route)
+  
+  #-----------------------------------------------------------------------------#
+  # Section 2. Calculate feature contributions ----
+  #-----------------------------------------------------------------------------#
   
   # take differences i.e. contributions for each variable
   # note, the last element is the prediction for the
