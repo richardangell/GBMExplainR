@@ -4,7 +4,8 @@
 \alias{decompose_gbm_prediction}
 \title{Decompose gbm prediction into feature contributions + bais}
 \usage{
-decompose_gbm_prediction(gbm, prediction_row, verbose = FALSE)
+decompose_gbm_prediction(gbm, prediction_row, verbose = FALSE,
+  aggregate_contributions = TRUE)
 }
 \arguments{
 \item{gbm}{\code{gbm.object} to predict with}
@@ -14,6 +15,12 @@ decompose into feature contributions}
 
 \item{verbose}{should split decisions be printed to console? Default value
 is \code{FALSE}.}
+
+\item{aggregate_contributions}{should feature contributions aggregated to
+variable level be returned? Default is \code{TRUE}. The option is there to
+inspect the contributions at tree x node level, which is mainly used with
+the \code{validate_decomposition} function. Note, if contributions are not
+aggregated then the model intercept will not be accounted for.}
 }
 \description{
 For a single observation decompose the prediction for a gbm into feature 

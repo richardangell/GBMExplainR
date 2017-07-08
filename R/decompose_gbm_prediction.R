@@ -15,6 +15,11 @@
 #'   decompose into feature contributions
 #' @param verbose should split decisions be printed to console? Default value
 #'   is \code{FALSE}.
+#' @param aggregate_contributions should feature contributions aggregated to
+#'   variable level be returned? Default is \code{TRUE}. The option is there to
+#'   inspect the contributions at tree x node level, which is mainly used with
+#'   the \code{validate_decomposition} function. Note, if contributions are not
+#'   aggregated then the model intercept will not be accounted for.
 #'   
 #' @details Based on treeinterpreter Python package for random forests; 
 #'   \url{https://github.com/andosa/treeinterpreter}.  
