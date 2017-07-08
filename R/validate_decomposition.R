@@ -78,6 +78,12 @@ validate_decomposition <- function(gbm, prediction_row) {
     
   }
   
+  if (gbm$distribution$name == "poisson") {
+    
+    warning("decomposed prediction will be validated on the link scale.")
+    
+  }
+  
   #-----------------------------------------------------------------------------#
   # Section 1. Decompose prediction ----
   #-----------------------------------------------------------------------------#
@@ -85,6 +91,7 @@ validate_decomposition <- function(gbm, prediction_row) {
   # do not aggregate to variable level
   contributions <- decompose_gbm_prediction(gbm = gbm, 
                                             prediction_row = prediction_row,
+                                            type = "link",
                                             aggregate_contributions = FALSE)
   
   #-----------------------------------------------------------------------------#

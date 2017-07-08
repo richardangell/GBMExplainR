@@ -4,14 +4,19 @@
 \alias{decompose_gbm_prediction}
 \title{Decompose gbm prediction into feature contributions + bais}
 \usage{
-decompose_gbm_prediction(gbm, prediction_row, verbose = FALSE,
-  aggregate_contributions = TRUE)
+decompose_gbm_prediction(gbm, prediction_row, type = "link",
+  verbose = FALSE, aggregate_contributions = TRUE)
 }
 \arguments{
 \item{gbm}{\code{gbm.object} to predict with}
 
 \item{prediction_row}{single row \code{data.frame} to predict and the 
 decompose into feature contributions}
+
+\item{type}{either "link" or "response". Default is "link". If "response"
+and the gbm distribution is "poisson" then contributions are converted
+to be on the response scale (i.e. counts). For all distributions except
+"poisson" both options do the same.}
 
 \item{verbose}{should split decisions be printed to console? Default value
 is \code{FALSE}.}

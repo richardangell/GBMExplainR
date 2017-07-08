@@ -13,6 +13,10 @@
 #' @param gbm \code{gbm.object} to predict with
 #' @param prediction_row single row \code{data.frame} to predict and the 
 #'   decompose into feature contributions
+#' @param type either "link" or "response". Default is "link". If "response"
+#'   and the gbm distribution is "poisson" then contributions are converted
+#'   to be on the response scale (i.e. counts). For all distributions except
+#'   "poisson" both options do the same.
 #' @param verbose should split decisions be printed to console? Default value
 #'   is \code{FALSE}.
 #' @param aggregate_contributions should feature contributions aggregated to
@@ -59,7 +63,8 @@
 #' decompose_gbm_prediction(gbm1, data[1, ])
 #' 
 #' @export
-decompose_gbm_prediction <- function(gbm, prediction_row, verbose = FALSE, 
+decompose_gbm_prediction <- function(gbm, prediction_row, type = "link", 
+                                     verbose = FALSE, 
                                      aggregate_contributions = TRUE) {
   
   #-----------------------------------------------------------------------------#
@@ -129,6 +134,47 @@ decompose_gbm_prediction <- function(gbm, prediction_row, verbose = FALSE,
     
   }
   
+  if (!type %in% c("link", "response")) {
+    
+    stop("type should be ", sQuote("link"), " or ", sQuote("response"))
+    
+  }
+  
+  if (gbm$distribution$name == "bernoulli") {
+    
+    if (type == "response") {
+      
+      stop("for ",
+           sQuote("bernoulli"),
+           " distribution models it is only possible to return contributions on",
+           " the link (logit) scale.")
+      
+    }
+  
+  } else if (gbm$distribution$name == "poisson") {
+    
+    if (type == "response") {
+      
+      warning("returning contributions on response scale (i.e. counts)")
+      
+    } else if (type == "link") {
+      
+      warning("returning contributions on link (log) scale")
+      
+    }
+    
+  } else {
+    
+    if (type == "response") {
+      
+      warning("type of ", sQuote("response"), " only changes contributions ",
+              "to response scale for the poisson distribution it will have no ",
+              "effect for the ", gbm$distribution$name, " distribution.")
+      
+    }
+
+  }
+  
   #-----------------------------------------------------------------------------#
   # Section 1. Input checking ----
   #-----------------------------------------------------------------------------#
@@ -178,7 +224,17 @@ decompose_gbm_prediction <- function(gbm, prediction_row, verbose = FALSE,
     contributions[contributions$variable == "Bais", "contribution"] + gbm$initF
   
   #-----------------------------------------------------------------------------#
-  # Section 3. Return feature contributions ----
+  # Section 3. Convert contributions to response scale for poisson ----
+  #-----------------------------------------------------------------------------#
+  
+  if (gbm$distribution$name == "poisson" & type == "response") {
+    
+    contributions$contribution <- exp(contributions$contribution)
+    
+  }
+   
+  #-----------------------------------------------------------------------------#
+  # Section 4. Return feature contributions ----
   #-----------------------------------------------------------------------------#
   
   if (aggregate_contributions) {
