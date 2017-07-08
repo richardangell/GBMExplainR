@@ -118,12 +118,12 @@ choose_split_r <- function(row, pretty_tree, model, pred_row) {
     # splitting column name
     split_col_name <- model$var.names[split_col_id]
     
-    cat("split_col_name: ", split_col_name)
+    message("split_col_name: ", split_col_name)
     
     # splitting column type
     split_col_type <- model$var.type[split_col_id]
     
-    cat("split_col_type: ", split_col_type)
+    message("split_col_type: ", split_col_type)
     
     #-----------------------------------------------------------------------------#
     # Section 2.1. For categorical variables ----
