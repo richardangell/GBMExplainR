@@ -3,3 +3,4 @@
 export(choose_split_r)
 export(decompose_gbm_prediction)
 export(get_decision_path)
+export(validate_decomposition)
