@@ -35,6 +35,45 @@ decompose_gbm_prediction <- function(gbm, prediction_row) {
     
   }
   
+  if (!is(prediction_row, "data.frame")) {
+    
+    stop("prediction_row should be a data.frame")
+    
+  }
+  
+  if (nrow(prediction_row) != 1) {
+    
+    stop("prediction_row should be a single row data.frame")
+    
+  }
+  
+  supplied_columns <- colnames(prediction_row)
+  
+  if (any(!gbm$var.names %in% supplied_columns)) {
+    
+    stop("the following columns required by the model are not present; ",
+         paste(gbm$var.names[which(!gbm$var.names %in% supplied_columns)]))
+    
+  }
+  
+  if (any(gbm$var.type > 0)) {
+    
+    for (i in which(gbm$var.type > 0)) {
+
+      cat_value <- as.character(prediction_row[[gbm$var.names[i]]])
+      
+      if (!cat_value %in% gbm$var.levels[i][[1]]) {
+        
+        stop(paste(sQuote(cat_value), 
+                   "is not an expected level for",
+                   gbm$var.names[i]))  
+        
+      }
+      
+    }
+    
+  }
+  
   #-----------------------------------------------------------------------------#
   # Section 1. Input checking ----
   #-----------------------------------------------------------------------------#
