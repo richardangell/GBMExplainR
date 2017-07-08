@@ -175,6 +175,14 @@ choose_split_r <- function(row, pretty_tree, model, pred_row) {
       
       num_value <- as.numeric(pred_row[[split_col_name]])
       
+      # correct zero based indexing on ordered factor levels (just taking 
+      # numeric will start level indexes at 1)
+      if (!num_value == pred_row[[split_col_name]]) {
+        
+        num_value <- num_value - 1
+        
+      }
+      
       message("split varaible value: ", num_value)
       
       # if pred_row value for the split variable is greater than the split point
