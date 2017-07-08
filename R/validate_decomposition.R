@@ -1,15 +1,13 @@
 #' Validate decomposition of gbm prediction
 #' 
-#' Compare the decomposed prediction to the predicted value returned from 
-#' \code{predict.gbm}.
+#' Compare decomposed prediction to the predicted value returned from 
+#' \code{predict.gbm}. Predictions are compared up to and including every
+#' tree in the model (i.e. comparisons are made up to and including 1st, 2nd,
+#' ..., nth trees).
 #' 
 #' @param gbm \code{gbm.object} to predict with
 #' @param prediction_row single row \code{data.frame} to predict and the 
 #'   decompose into feature contributions
-#' @param contributions optional \code{data.frame} output from 
-#'   decompose_gbm_prediction. Default value is \code{NULL}, in which case 
-#'   decompose_gbm_prediction will be called to decompose the predicted value
-#'   for the input observation.
 #' 
 #' @examples
 #' N <- 1000
@@ -46,73 +44,103 @@
 #' validate_decomposition(gbm1, data[1, ])
 #' 
 #' @export
-validate_decomposition <- function(gbm, prediction_row, contributions = NULL) {
+validate_decomposition <- function(gbm, prediction_row) {
   
   #-----------------------------------------------------------------------------#
   # Function | validate_decomposition
   #-----------------------------------------------------------------------------#
-  # Layout   | Section 1. Decompose prediction
+  # Layout   | Section 0. Input checking
+  #          | Section 1. Decompose prediction
   #          | Section 2. Get prediction from model
   #          | Section 3. Get difference between the two
   #          | Section 4. Retrun results
   #-----------------------------------------------------------------------------#
   
   #-----------------------------------------------------------------------------#
+  # Section 0. Input checking ----
+  #-----------------------------------------------------------------------------#
+  
+  if (!is(gbm, "gbm")) {
+    
+    stop("gbm should be class gbm.")
+    
+  }
+  
+  if (!is(prediction_row, "data.frame")) {
+    
+    stop("prediction_row should be a data.frame")
+    
+  }
+  
+  if (nrow(prediction_row) != 1) {
+    
+    stop("prediction_row should be a single row data.frame")
+    
+  }
+  
+  #-----------------------------------------------------------------------------#
   # Section 1. Decompose prediction ----
   #-----------------------------------------------------------------------------#
   
-  if (is.null(contributions)) {
+  # do not aggregate to variable level
+  contributions <- decompose_gbm_prediction(gbm = gbm, 
+                                            prediction_row = prediction_row,
+                                            aggregate_contributions = FALSE)
+  
+  #-----------------------------------------------------------------------------#
+  # Section 2. Get predictions from model ----
+  #-----------------------------------------------------------------------------#
+  
+  # get predictions for each tree
+  predictions <- predict.gbm(gbm, prediction_row, n.trees = 1:gbm$n.trees)
+  
+  predictions <- as.vector(predictions)
+  
+  #-----------------------------------------------------------------------------#
+  # Section 3. Check contribution for each tree ----
+  #-----------------------------------------------------------------------------#
+  
+  # recalculate the predicted value up to and including the ith tree
+  decomposed_pred <- sapply(1:gbm$n.trees,
+                            function(i) gbm$initF + 
+                              sum(contributions[contributions$tree_no <= i, 
+                                                "contrib"]))
+  
+  all_equal_check <- mapply(all.equal,
+                            predictions,
+                            decomposed_pred)
+  
+  return_df <- data.frame(model_predictions = predictions,
+                          decomposed_predictions = decomposed_pred,
+                          all_equal_check = all_equal_check)
+  
+  #-----------------------------------------------------------------------------#
+  # Section 4. Return results and print ----
+  #-----------------------------------------------------------------------------#
+  
+  if (is.character(return_df$all_equal_check)) {
     
-    contributions <- decompose_gbm_prediction(gbm = gbm, 
-                                              prediction_row = prediction_row)
-    
-  } else {
-    
-    if (!is(contributions, "data.frame")) {
+    if (any(return_df$all_equal_check != "TRUE")) {
       
-      stop("contributions should be a data.frame (output from decompose_gbm_prediction)")
+      non_equal_rows <- which(return_df$all_equal_check != "TRUE")
+      
+      for (i in non_equal_rows) {
+        
+        cat("tree no: ",
+            i,
+            "predict.gbm value: ",
+            return_df[i, "model_predictions"],
+            "decomposed prediction value: ",
+            return_df[i, "decomposed_predictions"])
+        
+      }
       
     }
     
-    if (!all(colnames(contributions) == c("variable", "contribution"))) {
-      
-      stop("contributions should have columns; variable, contribution")
-      
-    } 
-    
   }
   
-  #-----------------------------------------------------------------------------#
-  # Section 2. Get prediction from model ----
-  #-----------------------------------------------------------------------------#
+  return(return_df)
+   
+}  
+  
 
-  prediction <- predict.gbm(gbm, prediction_row)
-  
-  #-----------------------------------------------------------------------------#
-  # Section 3. Get difference between the two ----
-  #-----------------------------------------------------------------------------#
-  
-  difference <- all.equal(prediction, sum(contributions$contribution))
-  
-  if (is.logical(difference)) {
-    
-    if (difference) {
-      
-      print("bais + feature contribtions = prediction")
-      
-    }
-    
-  } else {
-    
-    print(difference)
-    
-  }
-  
-  #-----------------------------------------------------------------------------#
-  # Section 4. Retrun results ----
-  #-----------------------------------------------------------------------------#
-  
-  return(list(prediction = prediction,
-              contributions = contributions))
-  
-}

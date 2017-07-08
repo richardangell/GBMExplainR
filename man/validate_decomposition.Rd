@@ -4,22 +4,19 @@
 \alias{validate_decomposition}
 \title{Validate decomposition of gbm prediction}
 \usage{
-validate_decomposition(gbm, prediction_row, contributions = NULL)
+validate_decomposition(gbm, prediction_row)
 }
 \arguments{
 \item{gbm}{\code{gbm.object} to predict with}
 
 \item{prediction_row}{single row \code{data.frame} to predict and the 
 decompose into feature contributions}
-
-\item{contributions}{optional \code{data.frame} output from 
-decompose_gbm_prediction. Default value is \code{NULL}, in which case 
-decompose_gbm_prediction will be called to decompose the predicted value
-for the input observation.}
 }
 \description{
-Compare the decomposed prediction to the predicted value returned from 
-\code{predict.gbm}.
+Compare decomposed prediction to the predicted value returned from 
+\code{predict.gbm}. Predictions are compared up to and including every
+tree in the model (i.e. comparisons are made up to and including 1st, 2nd,
+..., nth trees).
 }
 \examples{
 N <- 1000
