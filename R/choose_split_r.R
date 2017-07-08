@@ -81,7 +81,7 @@ choose_split_r <- function(row, pretty_tree, model, pred_row) {
   #          | Section 4. Return decision info or call choose_split_r again
   #-----------------------------------------------------------------------------#
   
-  cat("running choose_split_r on row:", row, "\n")
+  message("running choose_split_r on row: ", row)
   
   split_var <- pretty_tree[row, "SplitVar"] 
   
@@ -96,12 +96,12 @@ choose_split_r <- function(row, pretty_tree, model, pred_row) {
     # splitting column name
     split_col_name <- NA
     
-    cat("split_col_name:", split_col_name, "\n")
+    message("split_col_name: ", split_col_name)
     
     # splitting column type
     split_col_type <- NA
     
-    cat("split_col_type:", split_col_type, "\n")
+    message("split_col_type: ", split_col_type)
     
   #-----------------------------------------------------------------------------#
   # Section 2. Else if the current node is not a terminal node ----
@@ -113,17 +113,17 @@ choose_split_r <- function(row, pretty_tree, model, pred_row) {
     # note, gbm package starts SplitVar idx from 0
     split_col_id <- pretty_tree[row, "SplitVar"] + 1
     
-    cat("split_col_id:", split_col_id, "\n")
+    message("split_col_id: ", split_col_id)
     
     # splitting column name
     split_col_name <- model$var.names[split_col_id]
     
-    cat("split_col_name:", split_col_name, "\n")
+    cat("split_col_name: ", split_col_name)
     
     # splitting column type
     split_col_type <- model$var.type[split_col_id]
     
-    cat("split_col_type:", split_col_type, "\n")
+    cat("split_col_type: ", split_col_type)
     
     #-----------------------------------------------------------------------------#
     # Section 2.1. For categorical variables ----
@@ -226,9 +226,9 @@ choose_split_r <- function(row, pretty_tree, model, pred_row) {
   # Section 4. Return decision info or call choose_split_r again  ----
   #-----------------------------------------------------------------------------#
   
-  cat("prediction:", pretty_tree[row, "Prediction"], "\n")
+  message("prediction: ", pretty_tree[row, "Prediction"])
   
-  cat("direction:", direction, "\n")
+  message("direction: ", direction)
   
   # if the node is a terminal node return the results in df
   if (direction == "TerminalNode") {
