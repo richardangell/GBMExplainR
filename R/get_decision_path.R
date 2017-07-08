@@ -63,7 +63,7 @@
 #'                    pred_row = data[1, ])          
 #' 
 #' @export
-get_decision_path <- function(pretty_tree, model, pred_row) {
+get_decision_path <- function(pretty_tree, model, pred_row, verbose) {
   
   #-----------------------------------------------------------------------------#
   # Function | get_decision_path
@@ -75,11 +75,22 @@ get_decision_path <- function(pretty_tree, model, pred_row) {
   #-----------------------------------------------------------------------------#
   # Section 1. Get prediction route through tree ----
   #-----------------------------------------------------------------------------#
-
-  pred_route <- choose_split_r(row = 1,
-                               pretty_tree = pretty_tree, 
-                               model = model, 
-                               pred_row = pred_row)
+  
+  if (verbose) {
+    
+    pred_route <- choose_split_r(row = 1,
+                                 pretty_tree = pretty_tree, 
+                                 model = model, 
+                                 pred_row = pred_row)
+    
+  } else {
+    
+    suppressMessages(pred_route <- choose_split_r(row = 1,
+                                                  pretty_tree = pretty_tree, 
+                                                  model = model, 
+                                                  pred_row = pred_row))
+    
+  }
   
   # change structure from list into data.frame
   pred_route_df <- do.call(rbind, pred_route)

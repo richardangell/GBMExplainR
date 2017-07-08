@@ -52,7 +52,7 @@
 #' decompose_gbm_prediction(gbm1, data[1, ])
 #' 
 #' @export
-decompose_gbm_prediction <- function(gbm, prediction_row) {
+decompose_gbm_prediction <- function(gbm, prediction_row, verbose = FALSE) {
   
   #-----------------------------------------------------------------------------#
   # Function | decompose_gbm_prediction
@@ -129,7 +129,8 @@ decompose_gbm_prediction <- function(gbm, prediction_row) {
                           
                           tree_route <- get_decision_path(pretty_tree = pretty_tree,
                                                           model = gbm, 
-                                                          pred_row = prediction_row)
+                                                          pred_row = prediction_row,
+                                                          verbose = verbose)
                           
                           return(tree_route)
                           
