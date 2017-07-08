@@ -139,6 +139,8 @@ choose_split_r <- function(row, pretty_tree, model, pred_row) {
       
       cat_value <- as.character(pred_row[[split_col_name]])
       
+      message("split varaible value: ", cat_value)
+      
       # get the direction of the categorical value for pred_row
       cat_value_dir <- cat_directions[which(cat_levels == cat_value)]
       
@@ -172,6 +174,8 @@ choose_split_r <- function(row, pretty_tree, model, pred_row) {
     } else if (split_col_type == 0) {
       
       num_value <- as.numeric(pred_row[[split_col_name]])
+      
+      message("split varaible value: ", num_value)
       
       # if pred_row value for the split variable is greater than the split point
       if (num_value >= pretty_tree[row, "SplitCodePred"]) {
