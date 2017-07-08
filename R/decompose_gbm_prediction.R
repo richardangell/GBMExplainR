@@ -143,13 +143,19 @@ decompose_gbm_prediction <- function(gbm, prediction_row) {
   tree_routes_all <- do.call(rbind, tree_routes)
   
   levels(tree_routes_all$variable) <- c(levels(tree_routes_all$variable),
-                                        "TreeStart")
+                                        "Bais")
   
-  tree_routes_all$variable[tree_routes_all$direction == "TerminalNode"] <- "TreeStart"
+  tree_routes_all$variable[tree_routes_all$direction == "TerminalNode"] <- "Bais"
   
   contributions <- aggregate(x = tree_routes_all$contrib,
                              by = list(tree_routes_all$variable),
                              FUN = sum)
+  
+  colnames(contributions) <- c("variable", "contribution")
+  
+  # add on the intercept to the bais term
+  contributions[contributions$variable == "Bais", "contribution"] <- 
+    contributions[contributions$variable == "Bais", "contribution"] + gbm$initF
   
   #-----------------------------------------------------------------------------#
   # Section 3. Return feature contributions ----
