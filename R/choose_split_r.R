@@ -166,24 +166,26 @@ choose_split_r <- function(row, pretty_tree, model, pred_row) {
       }
       
       #-----------------------------------------------------------------------------#
-      # Section 2.2. For continuous variables ----
+      # Section 2.2. For continuous / ordered variables ----
       #-----------------------------------------------------------------------------#
       
     } else if (split_col_type == 0) {
       
+      num_value <- as.numeric(pred_row[[split_col_name]])
+      
       # if pred_row value for the split variable is greater than the split point
-      if (pred_row[[split_col_name]] >= pretty_tree[row, "SplitCodePred"]) {
+      if (num_value >= pretty_tree[row, "SplitCodePred"]) {
         
         direction <- "RightNode"  
         
         # if pred_row value for the split variable is less than or equal to the 
         # split point
-      } else if (pred_row[[split_col_name]] < pretty_tree[row, "SplitCodePred"]) {
+      } else if (num_value < pretty_tree[row, "SplitCodePred"]) {
         
         direction <- "LeftNode"  
         
         # if pred_row value for the split variable is NA
-      } else if (is.na(pred_row[[split_col_name]])) {
+      } else if (is.na(num_value)) {
         
         direction <- "MissingNode"
         
