@@ -54,7 +54,8 @@
 #' decompose_gbm_prediction(gbm1, data[1, ])
 #' 
 #' @export
-decompose_gbm_prediction <- function(gbm, prediction_row, verbose = FALSE) {
+decompose_gbm_prediction <- function(gbm, prediction_row, verbose = FALSE, 
+                                     aggregate_contributions = TRUE) {
   
   #-----------------------------------------------------------------------------#
   # Function | decompose_gbm_prediction
@@ -114,6 +115,15 @@ decompose_gbm_prediction <- function(gbm, prediction_row, verbose = FALSE) {
     
   }
   
+  if (!aggregate_contributions) {
+    
+    warning("aggregate_contributions is FALSE, so contributions will be ", 
+            "returned at node level not overall model level. This is mainly ",
+            "used in conjunction with validate_decomposition. Model intercept ",
+            "will not be included in this output.")
+    
+  }
+  
   #-----------------------------------------------------------------------------#
   # Section 1. Input checking ----
   #-----------------------------------------------------------------------------#
@@ -133,6 +143,8 @@ decompose_gbm_prediction <- function(gbm, prediction_row, verbose = FALSE) {
                                                           model = gbm, 
                                                           pred_row = prediction_row,
                                                           verbose = verbose)
+                          
+                          tree_route$tree_no <- x
                           
                           return(tree_route)
                           
@@ -164,7 +176,15 @@ decompose_gbm_prediction <- function(gbm, prediction_row, verbose = FALSE) {
   # Section 3. Return feature contributions ----
   #-----------------------------------------------------------------------------#
   
-  return(contributions)
+  if (aggregate_contributions) {
+    
+    return(contributions)
+    
+  } else {
+    
+    return(tree_routes_all)
+    
+  }
   
 }
 
