@@ -4,7 +4,7 @@
 \alias{decompose_gbm_prediction}
 \title{Decompose gbm prediction into feature contributions + bais}
 \usage{
-decompose_gbm_prediction(gbm, prediction_row)
+decompose_gbm_prediction(gbm, prediction_row, verbose = FALSE)
 }
 \arguments{
 \item{gbm}{\code{gbm.object} to predict with}

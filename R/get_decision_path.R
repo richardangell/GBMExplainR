@@ -14,6 +14,7 @@
 #' @return \code{data.frame} showing split decisions as well as contribution 
 #'   to predicted value for each node visited by the given observation en route
 #'   to a terminal node. Contains columns;
+#'   \item{\code{node_index}}{index of node observation has passed through}
 #'   \item{\code{variable}}{name of the splitting variable (NA for terminal 
 #'     nodes)}
 #'   \item{\code{type}}{type for splitting variable, if type > 0 then the 

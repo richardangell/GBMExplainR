@@ -20,6 +20,7 @@
 #' @return \code{list} of \code{data.frame} s showing split decisions for each 
 #'   node visited by the given observation en route to a terminal node. 
 #'   Contains columns;
+#'   \item{\code{node_index}}{index of node observation has passed through}
 #'   \item{\code{variable}}{name of the splitting variable (NA for terminal 
 #'     nodes)}
 #'   \item{\code{type}}{type for splitting variable, if type > 0 then the 
@@ -229,7 +230,8 @@ choose_split_r <- function(row, pretty_tree, model, pred_row) {
   # Section 3. Record split decision info in data.frame ----
   #-----------------------------------------------------------------------------#
   
-  decision_df <- data.frame(variable = split_col_name,
+  decision_df <- data.frame(node_index = row - 1,
+                            variable = split_col_name,
                             type = split_col_type,
                             direction = direction,
                             prediction = pretty_tree[row, "Prediction"])
