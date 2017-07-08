@@ -1,17 +1,55 @@
-#' Decompose gbm prediction into feature contributions
+#' Decompose gbm prediction into feature contributions + bais
 #' 
-#' more detailed explaination of function
+#' For a single observation decompose the prediction for a gbm into feature 
+#' contributions + bais. Within a single tree, the contribution for a given 
+#' node is calculated by subtracting the prediction for the current node from 
+#' the prediction of the next node the observation would visit in the tree. 
+#' The predicted value for the first node in the tree is combined into the 
+#' bais term (which also includes the intercept or \code{initF} from the model).
+#' Node contributions are summed by the split variable for the node, across all 
+#' trees in the model, giving the observation's prediction represented as
+#' bais + contribution for each feature used in the model.
 #' 
-#' @param gbm \code{gbm} object to predict with
+#' @param gbm \code{gbm.object} to predict with
 #' @param prediction_row single row \code{data.frame} to predict and the 
 #'   decompose into feature contributions
 #'   
-#' @details based on treeinterpreter https://github.com/andosa/treeinterpreter  
+#' @details Based on treeinterpreter Python package for random forests; 
+#'   \url{https://github.com/andosa/treeinterpreter}.  
 #' 
-#' @example 
-#' build gbm 
-#' predict row
-#' decompose prediction
+#' @examples
+#' N <- 1000
+#' X1 <- runif(N)
+#' X2 <- 2*runif(N)
+#' X3 <- ordered(sample(letters[1:4],N,replace=TRUE),levels=letters[4:1])
+#' X4 <- factor(sample(letters[1:6],N,replace=TRUE))
+#' X5 <- factor(sample(letters[1:3],N,replace=TRUE))
+#' X6 <- 3*runif(N) 
+#' mu <- c(-1,0,1,2)[as.numeric(X3)]
+#' 
+#' SNR <- 10 # signal-to-noise ratio
+#' Y <- X1**1.5 + 2 * (X2**.5) + mu
+#' sigma <- sqrt(var(Y)/SNR)
+#' Y <- Y + rnorm(N,0,sigma)
+#' 
+#' # introduce some missing values
+#' X1[sample(1:N,size=500)] <- NA
+#' X4[sample(1:N,size=300)] <- NA
+#' 
+#' data <- data.frame(Y=Y,X1=X1,X2=X2,X3=X3,X4=X4,X5=X5,X6=X6)
+#' 
+#' # fit initial model
+#' gbm1 <- gbm(Y~X1+X2+X3+X4+X5+X6,        
+#'            data=data,                  
+#'            var.monotone=c(0,0,0,0,0,0),
+#'            distribution="gaussian",   
+#'            n.trees=1000,     
+#'            shrinkage=0.05,  
+#'            interaction.depth=3,
+#'            bag.fraction = 0.5,
+#'            train.fraction = 0.5)
+#' 
+#' decompose_gbm_prediction(gbm1, data[1, ])
 #' 
 #' @export
 decompose_gbm_prediction <- function(gbm, prediction_row) {
