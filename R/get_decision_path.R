@@ -10,7 +10,9 @@
 #' @param model \code{gbm.object} 
 #' @param pred_row single \code{data.frame} row (containing explanatory columns) 
 #'   to send down the tree to a terminal node
-#' 
+#' @param verbose should split decisions be printed to console? Default value
+#'   is \code{FALSE}.
+#'   
 #' @return \code{data.frame} showing split decisions as well as contribution 
 #'   to predicted value for each node visited by the given observation en route
 #'   to a terminal node. Contains columns;

@@ -11,6 +11,9 @@ decompose_gbm_prediction(gbm, prediction_row, verbose = FALSE)
 
 \item{prediction_row}{single row \code{data.frame} to predict and the 
 decompose into feature contributions}
+
+\item{verbose}{should split decisions be printed to console? Default value
+is \code{FALSE}.}
 }
 \description{
 For a single observation decompose the prediction for a gbm into feature 

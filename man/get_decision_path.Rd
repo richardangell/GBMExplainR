@@ -12,6 +12,9 @@ get_decision_path(pretty_tree, model, pred_row, verbose)
 \item{pred_row}{single \code{data.frame} row (containing explanatory columns) 
 to send down the tree to a terminal node}
 
+\item{verbose}{should split decisions be printed to console? Default value
+is \code{FALSE}.}
+
 \item{prett_tree}{\code{data.frame} output from \code{pretty.gbm.tree}
 giving tree structure.}
 }

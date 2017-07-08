@@ -13,6 +13,8 @@
 #' @param gbm \code{gbm.object} to predict with
 #' @param prediction_row single row \code{data.frame} to predict and the 
 #'   decompose into feature contributions
+#' @param verbose should split decisions be printed to console? Default value
+#'   is \code{FALSE}.
 #'   
 #' @details Based on treeinterpreter Python package for random forests; 
 #'   \url{https://github.com/andosa/treeinterpreter}.  
