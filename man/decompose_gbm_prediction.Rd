@@ -8,7 +8,8 @@ decompose_gbm_prediction(gbm, prediction_row, type = "link",
   verbose = FALSE, aggregate_contributions = TRUE)
 }
 \arguments{
-\item{gbm}{\code{gbm.object} to predict with}
+\item{gbm}{\code{gbm.object} to predict with. Note multinomial distribution
+gbms not currently supported.}
 
 \item{prediction_row}{single row \code{data.frame} to predict and the 
 decompose into feature contributions}

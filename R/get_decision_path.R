@@ -68,16 +68,15 @@
 #' @export
 get_decision_path <- function(pretty_tree, model, pred_row, verbose) {
   
-  #-----------------------------------------------------------------------------#
-  # Function | get_decision_path
-  #-----------------------------------------------------------------------------#
-  # Layout   | Section 1. Get prediction route through tree
-  #          | Section 2. Calculate feature contributions
-  #-----------------------------------------------------------------------------#
+  #----------------------------------------------------------------------------#
+  # Function Layout
+  # Section 1. Get prediction route through tree
+  # Section 2. Calculate feature contributions
+  #----------------------------------------------------------------------------#
   
-  #-----------------------------------------------------------------------------#
+  #----------------------------------------------------------------------------#
   # Section 1. Get prediction route through tree ----
-  #-----------------------------------------------------------------------------#
+  #----------------------------------------------------------------------------#
   
   if (verbose) {
     
@@ -98,9 +97,9 @@ get_decision_path <- function(pretty_tree, model, pred_row, verbose) {
   # change structure from list into data.frame
   pred_route_df <- do.call(rbind, pred_route)
   
-  #-----------------------------------------------------------------------------#
+  #----------------------------------------------------------------------------#
   # Section 2. Calculate feature contributions ----
-  #-----------------------------------------------------------------------------#
+  #----------------------------------------------------------------------------#
   
   # take differences i.e. contributions for each variable
   # note, the last element is the prediction for the

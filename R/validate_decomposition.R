@@ -46,19 +46,18 @@
 #' @export
 validate_decomposition <- function(gbm, prediction_row) {
   
-  #-----------------------------------------------------------------------------#
-  # Function | validate_decomposition
-  #-----------------------------------------------------------------------------#
-  # Layout   | Section 0. Input checking
-  #          | Section 1. Decompose prediction
-  #          | Section 2. Get prediction from model
-  #          | Section 3. Get difference between the two
-  #          | Section 4. Retrun results
-  #-----------------------------------------------------------------------------#
+  #----------------------------------------------------------------------------#
+  # Function Layout
+  # Section 0. Input checking
+  # Section 1. Decompose prediction
+  # Section 2. Get prediction from model
+  # Section 3. Get difference between the two
+  # Section 4. Retrun results
+  #----------------------------------------------------------------------------#
   
-  #-----------------------------------------------------------------------------#
+  #----------------------------------------------------------------------------#
   # Section 0. Input checking ----
-  #-----------------------------------------------------------------------------#
+  #----------------------------------------------------------------------------#
   
   if (!is(gbm, "gbm")) {
     
@@ -84,9 +83,9 @@ validate_decomposition <- function(gbm, prediction_row) {
     
   }
   
-  #-----------------------------------------------------------------------------#
+  #----------------------------------------------------------------------------#
   # Section 1. Decompose prediction ----
-  #-----------------------------------------------------------------------------#
+  #----------------------------------------------------------------------------#
   
   # do not aggregate to variable level
   contributions <- decompose_gbm_prediction(gbm = gbm, 
@@ -94,18 +93,18 @@ validate_decomposition <- function(gbm, prediction_row) {
                                             type = "link",
                                             aggregate_contributions = FALSE)
   
-  #-----------------------------------------------------------------------------#
+  #----------------------------------------------------------------------------#
   # Section 2. Get predictions from model ----
-  #-----------------------------------------------------------------------------#
+  #----------------------------------------------------------------------------#
   
   # get predictions for each tree
   predictions <- predict.gbm(gbm, prediction_row, n.trees = 1:gbm$n.trees)
   
   predictions <- as.vector(predictions)
   
-  #-----------------------------------------------------------------------------#
+  #----------------------------------------------------------------------------#
   # Section 3. Check contribution for each tree ----
-  #-----------------------------------------------------------------------------#
+  #----------------------------------------------------------------------------#
   
   # recalculate the predicted value up to and including the ith tree
   decomposed_pred <- sapply(1:gbm$n.trees,
@@ -121,9 +120,9 @@ validate_decomposition <- function(gbm, prediction_row) {
                           decomposed_predictions = decomposed_pred,
                           all_equal_check = all_equal_check)
   
-  #-----------------------------------------------------------------------------#
+  #----------------------------------------------------------------------------#
   # Section 4. Return results and print ----
-  #-----------------------------------------------------------------------------#
+  #----------------------------------------------------------------------------#
   
   if (is.character(return_df$all_equal_check)) {
     

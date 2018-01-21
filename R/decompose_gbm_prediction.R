@@ -10,7 +10,8 @@
 #' trees in the model, giving the observation's prediction represented as
 #' bais + contribution for each feature used in the model.
 #' 
-#' @param gbm \code{gbm.object} to predict with
+#' @param gbm \code{gbm.object} to predict with. Note multinomial distribution
+#' gbms not currently supported.
 #' @param prediction_row single row \code{data.frame} to predict and the 
 #'   decompose into feature contributions
 #' @param type either "link" or "response". Default is "link". If "response"
@@ -67,18 +68,17 @@ decompose_gbm_prediction <- function(gbm, prediction_row, type = "link",
                                      verbose = FALSE, 
                                      aggregate_contributions = TRUE) {
   
-  #-----------------------------------------------------------------------------#
-  # Function | decompose_gbm_prediction
-  #-----------------------------------------------------------------------------#
-  # Layout   | Section 0. Input checking
-  #          | Section 1. Input checking
-  #          | Section 2. Determine feature contributions
-  #          | Section 3. Return feature contributions
-  #-----------------------------------------------------------------------------#
+  #----------------------------------------------------------------------------#
+  # Function Layout
+  # Section 0. Input checking
+  # Section 1. Input checking
+  # Section 2. Determine feature contributions
+  # Section 3. Return feature contributions
+  #----------------------------------------------------------------------------#
   
-  #-----------------------------------------------------------------------------#
+  #----------------------------------------------------------------------------#
   # Section 0. Input checking ----
-  #-----------------------------------------------------------------------------#
+  #----------------------------------------------------------------------------#
   
   if (!is(gbm, "gbm")) {
     
@@ -146,7 +146,8 @@ decompose_gbm_prediction <- function(gbm, prediction_row, type = "link",
       
       stop("for ",
            sQuote("bernoulli"),
-           " distribution models it is only possible to return contributions on",
+           " ",
+           "distribution models it is only possible to return contributions on",
            " the link (logit) scale.")
       
     }
@@ -162,6 +163,10 @@ decompose_gbm_prediction <- function(gbm, prediction_row, type = "link",
       warning("returning contributions on link (log) scale")
       
     }
+  
+  } else if (gbm$distribution$name == "multinomial") {
+    
+    stop("multinomial distribution not currently supported")
     
   } else {
     
@@ -175,9 +180,9 @@ decompose_gbm_prediction <- function(gbm, prediction_row, type = "link",
 
   }
   
-  #-----------------------------------------------------------------------------#
+  #----------------------------------------------------------------------------#
   # Section 1. Input checking ----
-  #-----------------------------------------------------------------------------#
+  #----------------------------------------------------------------------------#
   
   explanatory_vars <- gbm$var.names
   
@@ -186,24 +191,24 @@ decompose_gbm_prediction <- function(gbm, prediction_row, type = "link",
   # loop through all trees in the model and get the decision route through 
   # each tree for the prediction row
   tree_routes <- lapply(1:gbm$n.trees,
-                        function(x) {
-                          
-                          pretty_tree <- pretty.gbm.tree(gbm, i.tree = x)
-                          
-                          tree_route <- get_decision_path(pretty_tree = pretty_tree,
-                                                          model = gbm, 
-                                                          pred_row = prediction_row,
-                                                          verbose = verbose)
-                          
-                          tree_route$tree_no <- x
-                          
-                          return(tree_route)
-                          
-                        })
+    function(x) {
+      
+      pretty_tree <- pretty.gbm.tree(gbm, i.tree = x)
+      
+      tree_route <- get_decision_path(pretty_tree = pretty_tree,
+                                      model = gbm, 
+                                      pred_row = prediction_row,
+                                      verbose = verbose)
+      
+      tree_route$tree_no <- x
+      
+      return(tree_route)
+    }
+  )
 
-  #-----------------------------------------------------------------------------#
+  #----------------------------------------------------------------------------#
   # Section 2. Determine feature contributions ----
-  #-----------------------------------------------------------------------------#
+  #----------------------------------------------------------------------------#
   
   # append routes through all trees into one data.frame
   tree_routes_all <- do.call(rbind, tree_routes)
@@ -211,7 +216,8 @@ decompose_gbm_prediction <- function(gbm, prediction_row, type = "link",
   levels(tree_routes_all$variable) <- c(levels(tree_routes_all$variable),
                                         "Bais")
   
-  tree_routes_all$variable[tree_routes_all$direction == "TerminalNode"] <- "Bais"
+  tree_routes_all$variable[tree_routes_all$direction == "TerminalNode"] <- 
+    "Bais"
   
   contributions <- aggregate(x = tree_routes_all$contrib,
                              by = list(tree_routes_all$variable),
@@ -223,9 +229,9 @@ decompose_gbm_prediction <- function(gbm, prediction_row, type = "link",
   contributions[contributions$variable == "Bais", "contribution"] <- 
     contributions[contributions$variable == "Bais", "contribution"] + gbm$initF
   
-  #-----------------------------------------------------------------------------#
+  #----------------------------------------------------------------------------#
   # Section 3. Convert contributions to response scale for poisson ----
-  #-----------------------------------------------------------------------------#
+  #----------------------------------------------------------------------------#
   
   if (gbm$distribution$name == "poisson" & type == "response") {
     
@@ -233,9 +239,9 @@ decompose_gbm_prediction <- function(gbm, prediction_row, type = "link",
     
   }
    
-  #-----------------------------------------------------------------------------#
+  #----------------------------------------------------------------------------#
   # Section 4. Return feature contributions ----
-  #-----------------------------------------------------------------------------#
+  #----------------------------------------------------------------------------#
   
   if (aggregate_contributions) {
     
