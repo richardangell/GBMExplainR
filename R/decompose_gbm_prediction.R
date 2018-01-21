@@ -11,25 +11,36 @@
 #' bais + contribution for each feature used in the model.
 #' 
 #' @param gbm \code{gbm.object} to predict with. Note multinomial distribution
-#'   gbms not currently supported.
+#' gbms not currently supported.
 #' @param prediction_row single row \code{data.frame} to predict and the 
-#'   decompose into feature contributions
+#' decompose into feature contributions
 #' @param type either "link" or "response". Default is "link". If "response"
-#'   and the gbm distribution is "poisson" then contributions are converted
-#'   to be on the response scale (i.e. counts). For all distributions except
-#'   "poisson" both options do the same.
+#' and the gbm distribution is "poisson" then contributions are converted
+#' to be on the response scale (i.e. counts). For all distributions except
+#' "poisson" both options do the same.
 #' @param verbose should split decisions be printed to console? Default value
-#'   is \code{FALSE}.
+#' is \code{FALSE}.
 #' @param aggregate_contributions should feature contributions aggregated to
-#'   variable level be returned? Default is \code{TRUE}. The option is there to
-#'   inspect the contributions at tree x node level, which is mainly used with
-#'   the \code{validate_decomposition} function. Note, if contributions are not
-#'   aggregated then the model intercept will not be accounted for.
+#' variable level be returned? Default is \code{TRUE}. The option is there to
+#' inspect the contributions at tree x node level, which is mainly used with
+#' the \code{validate_decomposition} function. Note, if contributions are not
+#' aggregated then the model intercept will not be accounted for.
 #' @param n_trees the number of trees to use in generating the prediction for
-#'   the given row. Default \code{NULL} uses all trees in the model.
+#' the given row. Default \code{NULL} uses all trees in the model.
+#'   
+#' @return \code{data.frame} containing variable contributions to predicted 
+#' value. \cr
+#' If \code{aggregate_contributions} = \code{TRUE}, the contributions are
+#' at the variable level;
+#'   \item{\code{variable}}{variable name}
+#'   \item{\code{contribution}}{variable contribution to prediction}
+#'   \item{\code{variable_value}}{value of variable for input row}
+#'   \item{\code{variabel_class}}{class of variable}
+#' If \code{aggregate_contributions} = \code{FALSE}, the contributions are   
+#' at node x tree level, see output from \code{\link{get_decision_path}}.
 #'   
 #' @details Based on treeinterpreter Python package for random forests; 
-#'   \url{https://github.com/andosa/treeinterpreter}.  
+#' \url{https://github.com/andosa/treeinterpreter}.  
 #' 
 #' @examples
 #' N <- 1000
@@ -210,8 +221,6 @@ decompose_gbm_prediction <- function(gbm, prediction_row, type = "link",
   
   model_intercept <- gbm$initF
   
-  
-  
   # loop through all trees in the model and get the decision route through 
   # each tree for the prediction row
   tree_routes <- lapply(1:n_trees,
@@ -263,7 +272,30 @@ decompose_gbm_prediction <- function(gbm, prediction_row, type = "link",
   }
    
   #----------------------------------------------------------------------------#
-  # Section 4. Return feature contributions ----
+  # Section 4. Add variable value and type  ----
+  #----------------------------------------------------------------------------#
+  
+  if (aggregate_contributions) {
+    
+    cols <- 
+      as.character(contributions$variable[contributions$variable != "Bais"])
+    
+    cols_row <- prediction_row[ , cols]
+    
+    # get column values in a single column as character
+    col_values <- t(cols_row)[ , 1]
+    
+    col_classes <- sapply(cols_row, class)
+    
+    # add on NA for the bias row
+    contributions$variable_value <- c(col_values, NA)
+    
+    contributions$variable_class <- c(col_classes, NA)
+    
+  }
+  
+  #----------------------------------------------------------------------------#
+  # Section 5. Return feature contributions ----
   #----------------------------------------------------------------------------#
   
   if (aggregate_contributions) {

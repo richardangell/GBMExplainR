@@ -31,6 +31,18 @@ aggregated then the model intercept will not be accounted for.}
 \item{n_trees}{the number of trees to use in generating the prediction for
 the given row. Default \code{NULL} uses all trees in the model.}
 }
+\value{
+\code{data.frame} containing variable contributions to predicted 
+value. \cr
+If \code{aggregate_contributions} = \code{TRUE}, the contributions are
+at the variable level;
+  \item{\code{variable}}{variable name}
+  \item{\code{contribution}}{variable contribution to prediction}
+  \item{\code{variable_value}}{value of variable for input row}
+  \item{\code{variabel_class}}{class of variable}
+If \code{aggregate_contributions} = \code{FALSE}, the contributions are   
+at node x tree level, see output from \code{\link{get_decision_path}}.
+}
 \description{
 For a single observation decompose the prediction for a gbm into feature 
 contributions + bais. Within a single tree, the contribution for a given 
@@ -44,7 +56,7 @@ bais + contribution for each feature used in the model.
 }
 \details{
 Based on treeinterpreter Python package for random forests; 
-  \url{https://github.com/andosa/treeinterpreter}.
+\url{https://github.com/andosa/treeinterpreter}.
 }
 \examples{
 N <- 1000
