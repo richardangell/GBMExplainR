@@ -5,7 +5,7 @@
 \title{Decompose gbm prediction into feature contributions + bais}
 \usage{
 decompose_gbm_prediction(gbm, prediction_row, type = "link",
-  verbose = FALSE, aggregate_contributions = TRUE)
+  verbose = FALSE, aggregate_contributions = TRUE, n_trees = NULL)
 }
 \arguments{
 \item{gbm}{\code{gbm.object} to predict with. Note multinomial distribution
@@ -27,6 +27,9 @@ variable level be returned? Default is \code{TRUE}. The option is there to
 inspect the contributions at tree x node level, which is mainly used with
 the \code{validate_decomposition} function. Note, if contributions are not
 aggregated then the model intercept will not be accounted for.}
+
+\item{n_trees}{the number of trees to use in generating the prediction for
+the given row. Default \code{NULL} uses all trees in the model.}
 }
 \description{
 For a single observation decompose the prediction for a gbm into feature 

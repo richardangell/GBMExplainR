@@ -4,13 +4,16 @@
 \alias{validate_decomposition}
 \title{Validate decomposition of gbm prediction}
 \usage{
-validate_decomposition(gbm, prediction_row)
+validate_decomposition(gbm, prediction_row, n_trees = NULL)
 }
 \arguments{
 \item{gbm}{\code{gbm.object} to predict with}
 
 \item{prediction_row}{single row \code{data.frame} to predict and the 
 decompose into feature contributions}
+
+\item{n_trees}{the number of trees to use in generating the prediction for
+the given row. Default \code{NULL} uses all trees in the model.}
 }
 \description{
 Compare decomposed prediction to the predicted value returned from 

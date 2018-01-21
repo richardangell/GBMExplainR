@@ -11,7 +11,7 @@
 #' bais + contribution for each feature used in the model.
 #' 
 #' @param gbm \code{gbm.object} to predict with. Note multinomial distribution
-#' gbms not currently supported.
+#'   gbms not currently supported.
 #' @param prediction_row single row \code{data.frame} to predict and the 
 #'   decompose into feature contributions
 #' @param type either "link" or "response". Default is "link". If "response"
@@ -25,6 +25,8 @@
 #'   inspect the contributions at tree x node level, which is mainly used with
 #'   the \code{validate_decomposition} function. Note, if contributions are not
 #'   aggregated then the model intercept will not be accounted for.
+#' @param n_trees the number of trees to use in generating the prediction for
+#'   the given row. Default \code{NULL} uses all trees in the model.
 #'   
 #' @details Based on treeinterpreter Python package for random forests; 
 #'   \url{https://github.com/andosa/treeinterpreter}.  
@@ -66,7 +68,8 @@
 #' @export
 decompose_gbm_prediction <- function(gbm, prediction_row, type = "link", 
                                      verbose = FALSE, 
-                                     aggregate_contributions = TRUE) {
+                                     aggregate_contributions = TRUE,
+                                     n_trees = NULL) {
   
   #----------------------------------------------------------------------------#
   # Function Layout
@@ -180,6 +183,25 @@ decompose_gbm_prediction <- function(gbm, prediction_row, type = "link",
 
   }
   
+  # check n_trees is less than or equal to the number of trees in the model
+  if (!is.null(n_trees)) {
+    
+    if (n_trees > gbm$n.trees) {
+      
+      stop("n_trees must be less than or equal to number of trees in the model")
+      
+    } else if (n_trees < 0)  {
+      
+      stop("n_trees must be greater than 0")
+      
+    }
+    
+  } else {
+    
+    n_trees <- gbm$n.trees
+    
+  }
+  
   #----------------------------------------------------------------------------#
   # Section 1. Input checking ----
   #----------------------------------------------------------------------------#
@@ -188,11 +210,12 @@ decompose_gbm_prediction <- function(gbm, prediction_row, type = "link",
   
   model_intercept <- gbm$initF
   
+  
+  
   # loop through all trees in the model and get the decision route through 
   # each tree for the prediction row
-  tree_routes <- lapply(1:gbm$n.trees,
+  tree_routes <- lapply(1:n_trees,
     function(x) {
-      
       pretty_tree <- pretty.gbm.tree(gbm, i.tree = x)
       
       tree_route <- get_decision_path(pretty_tree = pretty_tree,
