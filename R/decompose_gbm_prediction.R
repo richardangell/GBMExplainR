@@ -1,14 +1,14 @@
-#' Decompose gbm prediction into feature contributions + bais
+#' Decompose gbm prediction into feature contributions + bias
 #' 
 #' For a single observation decompose the prediction for a gbm into feature 
-#' contributions + bais. Within a single tree, the contribution for a given 
+#' contributions + bias. Within a single tree, the contribution for a given 
 #' node is calculated by subtracting the prediction for the current node from 
 #' the prediction of the next node the observation would visit in the tree. 
 #' The predicted value for the first node in the tree is combined into the 
-#' bais term (which also includes the intercept or \code{initF} from the model).
+#' bias term (which also includes the intercept or \code{initF} from the model).
 #' Node contributions are summed by the split variable for the node, across all 
 #' trees in the model, giving the observation's prediction represented as
-#' bais + contribution for each feature used in the model.
+#' bias + contribution for each feature used in the model.
 #' 
 #' @param gbm \code{gbm.object} to predict with. Note multinomial distribution
 #' gbms not currently supported.
@@ -246,10 +246,10 @@ decompose_gbm_prediction <- function(gbm, prediction_row, type = "link",
   tree_routes_all <- do.call(rbind, tree_routes)
   
   levels(tree_routes_all$variable) <- c(levels(tree_routes_all$variable),
-                                        "Bais")
+                                        "Bias")
   
   tree_routes_all$variable[tree_routes_all$direction == "TerminalNode"] <- 
-    "Bais"
+    "Bias"
   
   contributions <- aggregate(x = tree_routes_all$contrib,
                              by = list(tree_routes_all$variable),
@@ -257,9 +257,9 @@ decompose_gbm_prediction <- function(gbm, prediction_row, type = "link",
   
   colnames(contributions) <- c("variable", "contribution")
   
-  # add on the intercept to the bais term
-  contributions[contributions$variable == "Bais", "contribution"] <- 
-    contributions[contributions$variable == "Bais", "contribution"] + gbm$initF
+  # add on the intercept to the bias term
+  contributions[contributions$variable == "Bias", "contribution"] <- 
+    contributions[contributions$variable == "Bias", "contribution"] + gbm$initF
   
   #----------------------------------------------------------------------------#
   # Section 3. Convert contributions to response scale for poisson ----
@@ -278,7 +278,7 @@ decompose_gbm_prediction <- function(gbm, prediction_row, type = "link",
   if (aggregate_contributions) {
     
     cols <- 
-      as.character(contributions$variable[contributions$variable != "Bais"])
+      as.character(contributions$variable[contributions$variable != "Bias"])
     
     cols_row <- prediction_row[ , cols]
     

@@ -2,7 +2,7 @@
 % Please edit documentation in R/decompose_gbm_prediction.R
 \name{decompose_gbm_prediction}
 \alias{decompose_gbm_prediction}
-\title{Decompose gbm prediction into feature contributions + bais}
+\title{Decompose gbm prediction into feature contributions + bias}
 \usage{
 decompose_gbm_prediction(gbm, prediction_row, type = "link",
   verbose = FALSE, aggregate_contributions = TRUE, n_trees = NULL)
@@ -45,14 +45,14 @@ at node x tree level, see output from \code{\link{get_decision_path}}.
 }
 \description{
 For a single observation decompose the prediction for a gbm into feature 
-contributions + bais. Within a single tree, the contribution for a given 
+contributions + bias. Within a single tree, the contribution for a given 
 node is calculated by subtracting the prediction for the current node from 
 the prediction of the next node the observation would visit in the tree. 
 The predicted value for the first node in the tree is combined into the 
-bais term (which also includes the intercept or \code{initF} from the model).
+bias term (which also includes the intercept or \code{initF} from the model).
 Node contributions are summed by the split variable for the node, across all 
 trees in the model, giving the observation's prediction represented as
-bais + contribution for each feature used in the model.
+bias + contribution for each feature used in the model.
 }
 \details{
 Based on treeinterpreter Python package for random forests; 

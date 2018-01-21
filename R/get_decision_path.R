@@ -27,7 +27,7 @@
 #'   \item{\code{contrib}}{current node contribution to the terminal node 
 #'     prediction for the given observation in the given tree. Note, for 
 #'     terminal nodes the contribution is the prediction for the first node in
-#'     the tree. This is counted as part of the bais for the overall model.}
+#'     the tree. This is counted as part of the bias for the overall model.}
 #' 
 #' @examples 
 #' N <- 1000
