@@ -1,0 +1,70 @@
+---
+title: "README"
+output: github_document
+---
+
+# GbmExplainR
+Based off the [treeinterpreter](https://github.com/andosa/treeinterpreter) Python package, associated blog post [here](http://blog.datadive.net/random-forest-interpretation-conditional-feature-contributions/).
+
+### Decompose gbm predictions into feature contributions
+
+```{r, include=FALSE}
+library(gbm)
+library(igraph)
+library(GbmExplainR)
+N <- 1000
+X1 <- runif(N)
+X2 <- 2*runif(N)
+X3 <- ordered(sample(letters[1:4],N,replace=TRUE),levels=letters[4:1])
+X4 <- factor(sample(letters[1:6],N,replace=TRUE))
+X5 <- factor(sample(letters[1:3],N,replace=TRUE))
+X6 <- 3*runif(N) 
+mu <- c(-1,0,1,2)[as.numeric(X3)]
+
+SNR <- 10 # signal-to-noise ratio
+Y <- X1**1.5 + 2 * (X2**.5) + mu
+sigma <- sqrt(var(Y)/SNR)
+Y <- Y + rnorm(N,0,sigma)
+
+# introduce some missing values
+X1[sample(1:N,size=500)] <- NA
+
+data <- data.frame(Y=Y,X1=X1,X2=X2,X3=X3,X4=X4,X5=X5,X6=X6)
+
+# fit initial model
+gbm1 <- gbm(Y~X1+X2+X3+X4+X5+X6,        
+           data=data,                  
+           var.monotone=c(0,0,0,0,0,0),
+           distribution="gaussian",   
+           n.trees=1000,     
+           shrinkage=0.05,  
+           interaction.depth=3,
+           bag.fraction = 0.5,
+           train.fraction = 0.5)
+```
+
+For a given prediction from a gbm, the feature contributions can be extracted;
+
+```{r, include=TRUE, echo=FALSE}
+decompose_gbm_prediction(gbm1, data[1, ])
+```
+
+These can be charted in a simple barchart;
+
+```{r, include=TRUE, echo=FALSE}
+plot_feature_contributions(decompose_gbm_prediction(gbm1, data[1, ]))
+```
+
+### Tree structure and terminal node path
+
+Individual trees can be plotted, and the route to a terminal node can be highlighted for a given observation.
+
+```{r, include=TRUE, echo=TRUE}
+plot_tree(gbm1, 1, data[1, ]) 
+```
+
+### Other similar works
+- [treeinterpreter](https://github.com/andosa/treeinterpreter) Python package implements prediction decomposition for decision tree, random forests and extra tree models in [scikit-learn](http://scikit-learn.org/stable/index.html)
+- [eli5](https://github.com/TeamHG-Memex/eli5) Python package contains an [explain_predictions](http://eli5.readthedocs.io/en/latest/autodocs/eli5.html) function to do prediction decomposition for various models
+- [xgboostExplainer](https://github.com/AppliedDataSciencePartners/xgboostExplainer) implements prediction decomposition for [xgboost](https://github.com/dmlc/xgboost) models from R
+
