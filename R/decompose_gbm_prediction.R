@@ -127,14 +127,19 @@ decompose_gbm_prediction <- function(gbm, prediction_row, type = "link",
 
       cat_value <- as.character(prediction_row[[gbm$var.names[i]]])
       
-      if (!cat_value %in% gbm$var.levels[i][[1]]) {
+      # do not check categorical value if it is "NA"
+      if (cat_value != "NA") {
         
-        stop(paste(sQuote(cat_value), 
-                   "is not an expected level for",
-                   gbm$var.names[i]))  
+        if (!cat_value %in% gbm$var.levels[i][[1]]) {
+          
+          stop(paste(sQuote(cat_value), 
+                     "is not an expected level for",
+                     gbm$var.names[i]))  
+          
+        }
         
       }
-      
+
     }
     
   }
