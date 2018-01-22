@@ -178,7 +178,8 @@ choose_split_r <- function(row, pretty_tree, model, pred_row) {
       
       # correct zero based indexing on ordered factor levels (just taking 
       # numeric will start level indexes at 1)
-      if (!num_value == pred_row[[split_col_name]]) {
+      # do not check for NAs as this results in an error
+      if (!is.na(num_value) && !num_value == pred_row[[split_col_name]]) {
         
         num_value <- num_value - 1
         
@@ -186,21 +187,22 @@ choose_split_r <- function(row, pretty_tree, model, pred_row) {
       
       message("split varaible value: ", num_value)
       
+      # if pred_row value for the split variable is NA
+      # check NA condition first as it will error the other conditions
+      if (is.na(num_value)) {
+        
+        direction <- "MissingNode"
+      
       # if pred_row value for the split variable is greater than the split point
-      if (num_value >= pretty_tree[row, "SplitCodePred"]) {
+      } else if (num_value >= pretty_tree[row, "SplitCodePred"]) {
         
         direction <- "RightNode"  
         
-        # if pred_row value for the split variable is less than or equal to the 
-        # split point
+      # if pred_row value for the split variable is less than or equal to the 
+      # split point
       } else if (num_value < pretty_tree[row, "SplitCodePred"]) {
         
         direction <- "LeftNode"  
-        
-        # if pred_row value for the split variable is NA
-      } else if (is.na(num_value)) {
-        
-        direction <- "MissingNode"
         
       } else {
         
