@@ -159,12 +159,16 @@ decompose_gbm_prediction <- function(gbm, prediction_row, type = "link",
     
   }
   
-  if (gbm$distribution$name == "bernoulli") {
+  if (gbm$distribution$name %in% c("bernoulli", "adaboost", "huberized")) {
     
     if (type == "response") {
       
       stop("for ",
            sQuote("bernoulli"),
+           " ",
+           sQuote("adaboost"),
+           " ",
+           sQuote("huberized"),
            " ",
            "distribution models it is only possible to return contributions on",
            " the link (logit) scale.")
