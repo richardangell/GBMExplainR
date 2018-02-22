@@ -128,7 +128,7 @@ decompose_gbm_prediction <- function(gbm, prediction_row, type = "link",
       cat_value <- as.character(prediction_row[[gbm$var.names[i]]])
       
       # do not check categorical value if it is "NA"
-      if (cat_value != "NA") {
+      if (!is.na(cat_value) && cat_value != "NA") {
         
         if (!cat_value %in% gbm$var.levels[i][[1]]) {
           
