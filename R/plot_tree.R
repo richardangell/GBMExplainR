@@ -46,7 +46,7 @@
 #' plot_tree(gbm1, 1, data[1, ])
 #' 
 #' @export
-plot_tree <- function(gbm, tree_no, plot_path = NULL) {
+plot_tree <- function(gbm, tree_no, plot_path = NULL, label_cex, ...) {
   
   #----------------------------------------------------------------------------#
   # Function Layout
@@ -65,7 +65,7 @@ plot_tree <- function(gbm, tree_no, plot_path = NULL) {
   #----------------------------------------------------------------------------#
   
   #----------------------------------------------------------------------------#
-  # Section 0. Input checking
+  # Section 0. Input checking ----
   #----------------------------------------------------------------------------#
   
   if (!is(gbm, "gbm")) {
@@ -110,7 +110,7 @@ plot_tree <- function(gbm, tree_no, plot_path = NULL) {
   }
   
   #----------------------------------------------------------------------------#
-  # Section 1. Extract tree structure
+  # Section 1. Extract tree structure ----
   #----------------------------------------------------------------------------#
   
   pretty_tree <- pretty.gbm.tree(object = gbm, i.tree = tree_no)
@@ -120,7 +120,7 @@ plot_tree <- function(gbm, tree_no, plot_path = NULL) {
   pretty_tree$left_split_cond <- NA
   
   #----------------------------------------------------------------------------#
-  # Section 2. Get node variable names
+  # Section 2. Get node variable names ----
   #----------------------------------------------------------------------------#
   
   # note gbm stores variable from index 0 in pretty tree table
@@ -129,7 +129,7 @@ plot_tree <- function(gbm, tree_no, plot_path = NULL) {
     gbm$var.names[pretty_tree$SplitVar + 1]
     
   #----------------------------------------------------------------------------#
-  # Section 3. Get node variable types
+  # Section 3. Get node variable types ----
   #----------------------------------------------------------------------------#
 
   # get gbm encoding of variable type
@@ -140,7 +140,7 @@ plot_tree <- function(gbm, tree_no, plot_path = NULL) {
     gbm$var.type[pretty_tree$SplitVar + 1]
   
   #----------------------------------------------------------------------------#
-  # Section 4. Get continuous and categorical variables
+  # Section 4. Get continuous and categorical variables ----
   #----------------------------------------------------------------------------#
   
   continuous_variables <- !is.na(pretty_tree$split_var_type) &
@@ -150,7 +150,7 @@ plot_tree <- function(gbm, tree_no, plot_path = NULL) {
     pretty_tree$split_var_type > 0
     
   #----------------------------------------------------------------------------#
-  # Section 5. Get the left split condition for continuous variables
+  # Section 5. Get the left split condition for continuous variables ----
   #----------------------------------------------------------------------------#
   
   if (any(continuous_variables)) {
@@ -164,7 +164,7 @@ plot_tree <- function(gbm, tree_no, plot_path = NULL) {
   }
   
   #----------------------------------------------------------------------------#
-  # Section 6. Get the left split condition for categorical variables
+  # Section 6. Get the left split condition for categorical variables ----
   #----------------------------------------------------------------------------#
   
   if (any(categorical_variables)) {
@@ -206,7 +206,7 @@ plot_tree <- function(gbm, tree_no, plot_path = NULL) {
   }
   
   #----------------------------------------------------------------------------#
-  # Section 7. Combine terminal node predictions to get node text
+  # Section 7. Combine terminal node predictions to get node text ----
   #----------------------------------------------------------------------------#
   
   # this column becomes the text to display over the node
@@ -215,17 +215,17 @@ plot_tree <- function(gbm, tree_no, plot_path = NULL) {
            digits = 6)
   
   #----------------------------------------------------------------------------#
-  # Section 8. Get node parent structure
+  # Section 8. Get node parent structure ----
   #----------------------------------------------------------------------------#
 
   node_parents <- get_node_parents(pretty_tree)
   
   # create edge text; whether the node contion was satisfied or not or missing
-  node_parents$text <- rep(c("TRUE", "FALSE", "Missing"), 
+  node_parents$text <- rep(c("Y", "N", "NA"), 
                            nrow(node_parents) / 3)
   
   #----------------------------------------------------------------------------#
-  # Section 9. Set up tree structure
+  # Section 9. Set up tree structure ----
   #----------------------------------------------------------------------------#
   
   # structure 
@@ -243,7 +243,7 @@ plot_tree <- function(gbm, tree_no, plot_path = NULL) {
   plot_title <- paste0("GBM Tree ", tree_no, " Structure")
   
   #----------------------------------------------------------------------------#
-  # Section 10. Set edge widths for terminal node path
+  # Section 10. Set edge widths for terminal node path ----
   #----------------------------------------------------------------------------#
   
   if (!is.null(plot_path)) {
@@ -286,14 +286,16 @@ plot_tree <- function(gbm, tree_no, plot_path = NULL) {
   }
   
   #----------------------------------------------------------------------------#
-  # Section 11. Plot tree structure
+  # Section 11. Plot tree structure ----
   #----------------------------------------------------------------------------#
   
   igraph::plot.igraph(g, 
                       layout = layout.reingold.tilford, 
                       edge.label= E(g)$text, 
                       vertex.label = new_labels,
-                      main = plot_title)
+                      ...)
+  
+  title(plot_title, cex.main = 2)
   
 }
 
