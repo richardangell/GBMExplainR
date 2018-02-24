@@ -70,25 +70,24 @@
 #' @export
 choose_split_r <- function(row, pretty_tree, model, pred_row) {
   
-  #-----------------------------------------------------------------------------#
-  # Function | choose_split_r
-  #-----------------------------------------------------------------------------#
-  # Layout   | Section 1. If the current node is a terminal node
-  #          | Section 2. Else if the current node is not a terminal node
-  #          | Section 2.1. For categorical variables
-  #          | Section 2.2. For continuous variables
-  #          | Section 2.3. Otherwise error if var.type is negative
-  #          | Section 3. Record split decision info in data.frame
-  #          | Section 4. Return decision info or call choose_split_r again
-  #-----------------------------------------------------------------------------#
+  #----------------------------------------------------------------------------#
+  # Function Layout
+  # Section 1. If the current node is a terminal node
+  # Section 2. Else if the current node is not a terminal node
+  # Section 2.1. For categorical variables
+  # Section 2.2. For continuous variables
+  # Section 2.3. Otherwise error if var.type is negative
+  # Section 3. Record split decision info in data.frame
+  # Section 4. Return decision info or call choose_split_r again
+  #----------------------------------------------------------------------------#
   
   message("running choose_split_r on row: ", row)
   
   split_var <- pretty_tree[row, "SplitVar"] 
   
-  #-----------------------------------------------------------------------------#
+  #----------------------------------------------------------------------------#
   # Section 1. If the current node is a terminal node ----
-  #-----------------------------------------------------------------------------#
+  #----------------------------------------------------------------------------#
   
   if (split_var == -1) {
     
@@ -104,9 +103,9 @@ choose_split_r <- function(row, pretty_tree, model, pred_row) {
     
     message("split_col_type: ", split_col_type)
     
-  #-----------------------------------------------------------------------------#
+  #----------------------------------------------------------------------------#
   # Section 2. Else if the current node is not a terminal node ----
-  #-----------------------------------------------------------------------------#
+  #----------------------------------------------------------------------------#
     
   } else {
     
@@ -126,14 +125,15 @@ choose_split_r <- function(row, pretty_tree, model, pred_row) {
     
     message("split_col_type: ", split_col_type)
     
-    #-----------------------------------------------------------------------------#
+    #--------------------------------------------------------------------------#
     # Section 2.1. For categorical variables ----
-    #-----------------------------------------------------------------------------#
+    #--------------------------------------------------------------------------#
     
     if (split_col_type > 0) {
       
       # get categorical level split directions
-      cat_directions <- model$c.splits[pretty_tree[row, "SplitCodePred"] + 1][[1]]
+      cat_directions <- 
+        model$c.splits[pretty_tree[row, "SplitCodePred"] + 1][[1]]
       
       # get character vector of categorical levels
       cat_levels <- model$var.levels[split_col_id][[1]]
@@ -168,9 +168,9 @@ choose_split_r <- function(row, pretty_tree, model, pred_row) {
         
       }
       
-      #-----------------------------------------------------------------------------#
+      #------------------------------------------------------------------------#
       # Section 2.2. For continuous / ordered variables ----
-      #-----------------------------------------------------------------------------#
+      #------------------------------------------------------------------------#
       
     } else if (split_col_type == 0) {
       
@@ -178,7 +178,8 @@ choose_split_r <- function(row, pretty_tree, model, pred_row) {
       
       # correct zero based indexing on ordered factor levels (just taking 
       # numeric will start level indexes at 1)
-      if (!num_value == pred_row[[split_col_name]]) {
+      # do not check for NAs as this results in an error
+      if (!is.na(num_value) && !num_value == pred_row[[split_col_name]]) {
         
         num_value <- num_value - 1
         
@@ -186,21 +187,22 @@ choose_split_r <- function(row, pretty_tree, model, pred_row) {
       
       message("split varaible value: ", num_value)
       
+      # if pred_row value for the split variable is NA
+      # check NA condition first as it will error the other conditions
+      if (is.na(num_value)) {
+        
+        direction <- "MissingNode"
+      
       # if pred_row value for the split variable is greater than the split point
-      if (num_value >= pretty_tree[row, "SplitCodePred"]) {
+      } else if (num_value >= pretty_tree[row, "SplitCodePred"]) {
         
         direction <- "RightNode"  
         
-        # if pred_row value for the split variable is less than or equal to the 
-        # split point
+      # if pred_row value for the split variable is less than or equal to the 
+      # split point
       } else if (num_value < pretty_tree[row, "SplitCodePred"]) {
         
         direction <- "LeftNode"  
-        
-        # if pred_row value for the split variable is NA
-      } else if (is.na(num_value)) {
-        
-        direction <- "MissingNode"
         
       } else {
         
@@ -208,9 +210,9 @@ choose_split_r <- function(row, pretty_tree, model, pred_row) {
         
       }
       
-      #-----------------------------------------------------------------------------#
+      #------------------------------------------------------------------------#
       # Section 2.3. Otherwise error if var.type is negative ----
-      #-----------------------------------------------------------------------------#
+      #------------------------------------------------------------------------#
       
     } else {
       
@@ -226,9 +228,9 @@ choose_split_r <- function(row, pretty_tree, model, pred_row) {
     
   }
   
-  #-----------------------------------------------------------------------------#
+  #----------------------------------------------------------------------------#
   # Section 3. Record split decision info in data.frame ----
-  #-----------------------------------------------------------------------------#
+  #----------------------------------------------------------------------------#
   
   decision_df <- data.frame(node_index = row - 1,
                             variable = split_col_name,
@@ -236,9 +238,9 @@ choose_split_r <- function(row, pretty_tree, model, pred_row) {
                             direction = direction,
                             prediction = pretty_tree[row, "Prediction"])
   
-  #-----------------------------------------------------------------------------#
+  #----------------------------------------------------------------------------#
   # Section 4. Return decision info or call choose_split_r again  ----
-  #-----------------------------------------------------------------------------#
+  #----------------------------------------------------------------------------#
   
   message("prediction: ", pretty_tree[row, "Prediction"])
   

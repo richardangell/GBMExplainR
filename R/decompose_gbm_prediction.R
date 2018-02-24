@@ -1,32 +1,46 @@
-#' Decompose gbm prediction into feature contributions + bais
+#' Decompose gbm prediction into feature contributions + bias
 #' 
 #' For a single observation decompose the prediction for a gbm into feature 
-#' contributions + bais. Within a single tree, the contribution for a given 
+#' contributions + bias. Within a single tree, the contribution for a given 
 #' node is calculated by subtracting the prediction for the current node from 
 #' the prediction of the next node the observation would visit in the tree. 
 #' The predicted value for the first node in the tree is combined into the 
-#' bais term (which also includes the intercept or \code{initF} from the model).
+#' bias term (which also includes the intercept or \code{initF} from the model).
 #' Node contributions are summed by the split variable for the node, across all 
 #' trees in the model, giving the observation's prediction represented as
-#' bais + contribution for each feature used in the model.
+#' bias + contribution for each feature used in the model.
 #' 
-#' @param gbm \code{gbm.object} to predict with
+#' @param gbm \code{gbm.object} to predict with. Note multinomial distribution
+#' gbms not currently supported.
 #' @param prediction_row single row \code{data.frame} to predict and the 
-#'   decompose into feature contributions
+#' decompose into feature contributions
 #' @param type either "link" or "response". Default is "link". If "response"
-#'   and the gbm distribution is "poisson" then contributions are converted
-#'   to be on the response scale (i.e. counts). For all distributions except
-#'   "poisson" both options do the same.
+#' and the gbm distribution is "poisson" then contributions are converted
+#' to be on the response scale (i.e. counts). For all distributions except
+#' "poisson" both options do the same.
 #' @param verbose should split decisions be printed to console? Default value
-#'   is \code{FALSE}.
+#' is \code{FALSE}.
 #' @param aggregate_contributions should feature contributions aggregated to
-#'   variable level be returned? Default is \code{TRUE}. The option is there to
-#'   inspect the contributions at tree x node level, which is mainly used with
-#'   the \code{validate_decomposition} function. Note, if contributions are not
-#'   aggregated then the model intercept will not be accounted for.
+#' variable level be returned? Default is \code{TRUE}. The option is there to
+#' inspect the contributions at tree x node level, which is mainly used with
+#' the \code{validate_decomposition} function. Note, if contributions are not
+#' aggregated then the model intercept will not be accounted for.
+#' @param n_trees the number of trees to use in generating the prediction for
+#' the given row. Default \code{NULL} uses all trees in the model.
+#'   
+#' @return \code{data.frame} containing variable contributions to predicted 
+#' value. \cr
+#' If \code{aggregate_contributions} = \code{TRUE}, the contributions are
+#' at the variable level;
+#'   \item{\code{variable}}{variable name}
+#'   \item{\code{contribution}}{variable contribution to prediction}
+#'   \item{\code{variable_value}}{value of variable for input row}
+#'   \item{\code{variabel_class}}{class of variable}
+#' If \code{aggregate_contributions} = \code{FALSE}, the contributions are   
+#' at node x tree level, see output from \code{\link{get_decision_path}}.
 #'   
 #' @details Based on treeinterpreter Python package for random forests; 
-#'   \url{https://github.com/andosa/treeinterpreter}.  
+#' \url{https://github.com/andosa/treeinterpreter}.  
 #' 
 #' @examples
 #' N <- 1000
@@ -65,20 +79,20 @@
 #' @export
 decompose_gbm_prediction <- function(gbm, prediction_row, type = "link", 
                                      verbose = FALSE, 
-                                     aggregate_contributions = TRUE) {
+                                     aggregate_contributions = TRUE,
+                                     n_trees = NULL) {
   
-  #-----------------------------------------------------------------------------#
-  # Function | decompose_gbm_prediction
-  #-----------------------------------------------------------------------------#
-  # Layout   | Section 0. Input checking
-  #          | Section 1. Input checking
-  #          | Section 2. Determine feature contributions
-  #          | Section 3. Return feature contributions
-  #-----------------------------------------------------------------------------#
+  #----------------------------------------------------------------------------#
+  # Function Layout
+  # Section 0. Input checking
+  # Section 1. Input checking
+  # Section 2. Determine feature contributions
+  # Section 3. Return feature contributions
+  #----------------------------------------------------------------------------#
   
-  #-----------------------------------------------------------------------------#
+  #----------------------------------------------------------------------------#
   # Section 0. Input checking ----
-  #-----------------------------------------------------------------------------#
+  #----------------------------------------------------------------------------#
   
   if (!is(gbm, "gbm")) {
     
@@ -113,14 +127,19 @@ decompose_gbm_prediction <- function(gbm, prediction_row, type = "link",
 
       cat_value <- as.character(prediction_row[[gbm$var.names[i]]])
       
-      if (!cat_value %in% gbm$var.levels[i][[1]]) {
+      # do not check categorical value if it is "NA"
+      if (!is.na(cat_value) && cat_value != "NA") {
         
-        stop(paste(sQuote(cat_value), 
-                   "is not an expected level for",
-                   gbm$var.names[i]))  
+        if (!cat_value %in% gbm$var.levels[i][[1]]) {
+          
+          stop(paste(sQuote(cat_value), 
+                     "is not an expected level for",
+                     gbm$var.names[i]))  
+          
+        }
         
       }
-      
+
     }
     
   }
@@ -140,13 +159,18 @@ decompose_gbm_prediction <- function(gbm, prediction_row, type = "link",
     
   }
   
-  if (gbm$distribution$name == "bernoulli") {
+  if (gbm$distribution$name %in% c("bernoulli", "adaboost", "huberized")) {
     
     if (type == "response") {
       
       stop("for ",
            sQuote("bernoulli"),
-           " distribution models it is only possible to return contributions on",
+           " ",
+           sQuote("adaboost"),
+           " ",
+           sQuote("huberized"),
+           " ",
+           "distribution models it is only possible to return contributions on",
            " the link (logit) scale.")
       
     }
@@ -162,6 +186,10 @@ decompose_gbm_prediction <- function(gbm, prediction_row, type = "link",
       warning("returning contributions on link (log) scale")
       
     }
+  
+  } else if (gbm$distribution$name == "multinomial") {
+    
+    stop("multinomial distribution not currently supported")
     
   } else {
     
@@ -175,9 +203,28 @@ decompose_gbm_prediction <- function(gbm, prediction_row, type = "link",
 
   }
   
-  #-----------------------------------------------------------------------------#
+  # check n_trees is less than or equal to the number of trees in the model
+  if (!is.null(n_trees)) {
+    
+    if (n_trees > gbm$n.trees) {
+      
+      stop("n_trees must be less than or equal to number of trees in the model")
+      
+    } else if (n_trees < 0)  {
+      
+      stop("n_trees must be greater than 0")
+      
+    }
+    
+  } else {
+    
+    n_trees <- gbm$n.trees
+    
+  }
+  
+  #----------------------------------------------------------------------------#
   # Section 1. Input checking ----
-  #-----------------------------------------------------------------------------#
+  #----------------------------------------------------------------------------#
   
   explanatory_vars <- gbm$var.names
   
@@ -185,33 +232,33 @@ decompose_gbm_prediction <- function(gbm, prediction_row, type = "link",
   
   # loop through all trees in the model and get the decision route through 
   # each tree for the prediction row
-  tree_routes <- lapply(1:gbm$n.trees,
-                        function(x) {
-                          
-                          pretty_tree <- pretty.gbm.tree(gbm, i.tree = x)
-                          
-                          tree_route <- get_decision_path(pretty_tree = pretty_tree,
-                                                          model = gbm, 
-                                                          pred_row = prediction_row,
-                                                          verbose = verbose)
-                          
-                          tree_route$tree_no <- x
-                          
-                          return(tree_route)
-                          
-                        })
+  tree_routes <- lapply(1:n_trees,
+    function(x) {
+      pretty_tree <- pretty.gbm.tree(gbm, i.tree = x)
+      
+      tree_route <- get_decision_path(pretty_tree = pretty_tree,
+                                      model = gbm, 
+                                      pred_row = prediction_row,
+                                      verbose = verbose)
+      
+      tree_route$tree_no <- x
+      
+      return(tree_route)
+    }
+  )
 
-  #-----------------------------------------------------------------------------#
+  #----------------------------------------------------------------------------#
   # Section 2. Determine feature contributions ----
-  #-----------------------------------------------------------------------------#
+  #----------------------------------------------------------------------------#
   
   # append routes through all trees into one data.frame
   tree_routes_all <- do.call(rbind, tree_routes)
   
   levels(tree_routes_all$variable) <- c(levels(tree_routes_all$variable),
-                                        "Bais")
+                                        "Bias")
   
-  tree_routes_all$variable[tree_routes_all$direction == "TerminalNode"] <- "Bais"
+  tree_routes_all$variable[tree_routes_all$direction == "TerminalNode"] <- 
+    "Bias"
   
   contributions <- aggregate(x = tree_routes_all$contrib,
                              by = list(tree_routes_all$variable),
@@ -219,13 +266,13 @@ decompose_gbm_prediction <- function(gbm, prediction_row, type = "link",
   
   colnames(contributions) <- c("variable", "contribution")
   
-  # add on the intercept to the bais term
-  contributions[contributions$variable == "Bais", "contribution"] <- 
-    contributions[contributions$variable == "Bais", "contribution"] + gbm$initF
+  # add on the intercept to the bias term
+  contributions[contributions$variable == "Bias", "contribution"] <- 
+    contributions[contributions$variable == "Bias", "contribution"] + gbm$initF
   
-  #-----------------------------------------------------------------------------#
+  #----------------------------------------------------------------------------#
   # Section 3. Convert contributions to response scale for poisson ----
-  #-----------------------------------------------------------------------------#
+  #----------------------------------------------------------------------------#
   
   if (gbm$distribution$name == "poisson" & type == "response") {
     
@@ -233,9 +280,32 @@ decompose_gbm_prediction <- function(gbm, prediction_row, type = "link",
     
   }
    
-  #-----------------------------------------------------------------------------#
-  # Section 4. Return feature contributions ----
-  #-----------------------------------------------------------------------------#
+  #----------------------------------------------------------------------------#
+  # Section 4. Add variable value and type  ----
+  #----------------------------------------------------------------------------#
+  
+  if (aggregate_contributions) {
+    
+    cols <- 
+      as.character(contributions$variable[contributions$variable != "Bias"])
+    
+    cols_row <- prediction_row[ , cols]
+    
+    # get column values in a single column as character
+    col_values <- t(cols_row)[ , 1]
+    
+    col_classes <- sapply(cols_row, class)
+    
+    # add on NA for the bias row
+    contributions$variable_value <- c(col_values, NA)
+    
+    contributions$variable_class <- c(col_classes, NA)
+    
+  }
+  
+  #----------------------------------------------------------------------------#
+  # Section 5. Return feature contributions ----
+  #----------------------------------------------------------------------------#
   
   if (aggregate_contributions) {
     

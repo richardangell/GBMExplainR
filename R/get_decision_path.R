@@ -27,7 +27,7 @@
 #'   \item{\code{contrib}}{current node contribution to the terminal node 
 #'     prediction for the given observation in the given tree. Note, for 
 #'     terminal nodes the contribution is the prediction for the first node in
-#'     the tree. This is counted as part of the bais for the overall model.}
+#'     the tree. This is counted as part of the bias for the overall model.}
 #' 
 #' @examples 
 #' N <- 1000
@@ -68,16 +68,15 @@
 #' @export
 get_decision_path <- function(pretty_tree, model, pred_row, verbose) {
   
-  #-----------------------------------------------------------------------------#
-  # Function | get_decision_path
-  #-----------------------------------------------------------------------------#
-  # Layout   | Section 1. Get prediction route through tree
-  #          | Section 2. Calculate feature contributions
-  #-----------------------------------------------------------------------------#
+  #----------------------------------------------------------------------------#
+  # Function Layout
+  # Section 1. Get prediction route through tree
+  # Section 2. Calculate feature contributions
+  #----------------------------------------------------------------------------#
   
-  #-----------------------------------------------------------------------------#
+  #----------------------------------------------------------------------------#
   # Section 1. Get prediction route through tree ----
-  #-----------------------------------------------------------------------------#
+  #----------------------------------------------------------------------------#
   
   if (verbose) {
     
@@ -98,9 +97,9 @@ get_decision_path <- function(pretty_tree, model, pred_row, verbose) {
   # change structure from list into data.frame
   pred_route_df <- do.call(rbind, pred_route)
   
-  #-----------------------------------------------------------------------------#
+  #----------------------------------------------------------------------------#
   # Section 2. Calculate feature contributions ----
-  #-----------------------------------------------------------------------------#
+  #----------------------------------------------------------------------------#
   
   # take differences i.e. contributions for each variable
   # note, the last element is the prediction for the

@@ -5,10 +5,10 @@
 \alias{GbmExplainR}
 \alias{GbmExplainR-package}
 \title{GbmExplainR: Decompose predictions from a gbm into feature contributions + 
-bais.}
+bias.}
 \description{
 This package works with the gbm package and allows a prediction from a 
-\code{gbm.object} to be decomposed into feature contributions + bais.
+\code{gbm.object} to be decomposed into feature contributions + bias.
 This is a useful tool to have in explaining why a particular observation
 received the prediction it did, from the model.
 }
@@ -17,10 +17,10 @@ Within a single tree, the contribution for a given
 node is calculated by subtracting the prediction for the current node from 
 the prediction of the next node the observation would visit in the tree. 
 The predicted value for the first node in the tree is combined into the 
-bais term (which also includes the intercept or \code{initF} from the model).
+bias term (which also includes the intercept or \code{initF} from the model).
 Node contributions are summed by the split variable for the node, across all 
 trees in the model, giving the observation's prediction represented as
-bais + contribution for each feature used in the model.
+bias + contribution for each feature used in the model.
 }
 \section{References}{
 
