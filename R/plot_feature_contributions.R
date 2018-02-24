@@ -45,7 +45,7 @@
 #' plot_feature_contributions(preds_decomp)
 #' 
 #' @export
-plot_feature_contributions <- function(feature_contributions) {
+plot_feature_contributions <- function(feature_contributions, ...) {
   
   if (sum(feature_contributions$variable == "Bias") != 1) {
     
@@ -53,19 +53,17 @@ plot_feature_contributions <- function(feature_contributions) {
          "decompose_gbm_prediction run with aggregate_contributions = TRUE")
     
   }
-  
-  # remove the bias row from the contributions data.frame
-  remove_bias <- 
-    feature_contributions[-which(feature_contributions$variable == "Bias"), ]
 
-  remove_bias <- remove_bias[order(remove_bias$contribution), ]
+  feature_contributions <- 
+    feature_contributions[order(feature_contributions$contribution), ]
   
-  barplot(height = remove_bias$contribution,
-          names.arg = paste0(remove_bias$variable,
+  barplot(height = feature_contributions$contribution,
+          names.arg = paste0(feature_contributions$variable,
                              "\n",
                              " (",
-                             remove_bias$variable_value,
+                             feature_contributions$variable_value,
                              ")"),
-          main = "Feature Contributions")
+          main = "Feature Contributions",
+          ...)
   
 }
