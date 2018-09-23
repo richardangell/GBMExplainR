@@ -6,7 +6,7 @@ Author: Richard Angell <richardangell37@gmail.com>
 Maintainer: Richard Angell <richardangell37@gmail.com>
 Description: Package to explain gbm predictions. Works with the gbm package. The main feature of this package is the ability to decompose gbm predictions into feature contributions + bias. There is also functionality to plot tree structures along with terminal node paths for specific observations.
 Depends: gbm, igraph
-License: What license is it under?
+License: GNU General Public License v3.0
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 6.0.1
