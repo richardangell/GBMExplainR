@@ -1,7 +1,7 @@
 Package: GbmExplainR
 Type: Package
 Title: Decompose gbm predictions into feature contributions + bias
-Version: 0.1.0
+Version: 0.1.1
 Author: Richard Angell <richardangell37@gmail.com>
 Maintainer: Richard Angell <richardangell37@gmail.com>
 Description: Package to explain gbm predictions. Works with the gbm package. The main feature of this package is the ability to decompose gbm predictions into feature contributions + bias. There is also functionality to plot tree structures along with terminal node paths for specific observations.
