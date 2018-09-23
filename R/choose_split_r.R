@@ -131,40 +131,50 @@ choose_split_r <- function(row, pretty_tree, model, pred_row) {
     
     if (split_col_type > 0) {
       
-      # get categorical level split directions
-      cat_directions <- 
-        model$c.splits[pretty_tree[row, "SplitCodePred"] + 1][[1]]
+      # check if the categorical value is NA first
+      if (is.na(pred_row[[split_col_name]])) {
+        
+        direction <- "MissingNode"  
       
-      # get character vector of categorical levels
-      cat_levels <- model$var.levels[split_col_id][[1]]
-      
-      cat_value <- as.character(pred_row[[split_col_name]])
-      
-      message("split varaible value: ", cat_value)
-      
-      # get the direction of the categorical value for pred_row
-      cat_value_dir <- cat_directions[which(cat_levels == cat_value)]
-      
-      if (cat_value_dir == 1) {
-        
-        direction <- "RightNode"  
-        
-      } else if (cat_value_dir == -1) {
-        
-        direction <- "LeftNode"  
-        
-        # 0 indicates that the cat level was not present in the training data
-      } else if (cat_value_dir == 0) {
-        
-        direction <- "TerminalNode"
-        
-      } else if (is.na(cat_value_dir)) {
-        
-        direction <- "LeftNode" 
-        
+      # if categorical value is not NA find the direction the obs travels
       } else {
         
-        stop("errr")
+        # get categorical level split directions
+        cat_directions <- 
+          model$c.splits[pretty_tree[row, "SplitCodePred"] + 1][[1]]
+        
+        # get character vector of categorical levels
+        cat_levels <- model$var.levels[split_col_id][[1]]
+        
+        cat_value <- as.character(pred_row[[split_col_name]])
+        
+        message("split varaible value: ", cat_value)
+        
+        # get the direction of the categorical value for pred_row
+        cat_value_dir <- cat_directions[which(cat_levels == cat_value)]
+        
+        if (cat_value_dir == 1) {
+          
+          direction <- "RightNode"  
+          
+        } else if (cat_value_dir == -1) {
+          
+          direction <- "LeftNode"  
+          
+          # 0 indicates that the cat level was not present in the training data
+        } else if (cat_value_dir == 0) {
+          
+          direction <- "TerminalNode"
+          
+        } else if (is.na(cat_value_dir)) {
+          
+          direction <- "LeftNode" 
+          
+        } else {
+          
+          stop("errr")
+          
+        }
         
       }
       
