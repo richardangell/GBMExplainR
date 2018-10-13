@@ -4,7 +4,7 @@
 \alias{plot_feature_contributions}
 \title{Plot feature contributions}
 \usage{
-plot_feature_contributions(feature_contributions)
+plot_feature_contributions(feature_contributions, ...)
 }
 \arguments{
 \item{feature_contributions}{feature contributions output from 

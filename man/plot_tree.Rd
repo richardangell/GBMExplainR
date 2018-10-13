@@ -4,7 +4,7 @@
 \alias{plot_tree}
 \title{Plot tree structure}
 \usage{
-plot_tree(gbm, tree_no, plot_path = NULL)
+plot_tree(gbm, tree_no, plot_path = NULL, label_cex, ...)
 }
 \arguments{
 \item{gbm}{\code{gbm.object} to predict with.}
