@@ -1,2 +1,3 @@
 decompose_gbm_prediction-poisson			Example of decompose_gbm_prediction on poisson gbm from gbm package
 decompose_gbm_prediction-binomial			Example of decompose_gbm_prediction on binomial gbm from gbm package
+validate_decomposition			Example of validate_decomposition on gbm example from gbm help
